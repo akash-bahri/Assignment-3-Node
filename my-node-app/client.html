@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Survey</title>
+</head>
+<body>
+    <h1>Welcome to Survey</h1>
+    
+        <label for="question" id="question-label">init</label>
+        <input type="text" id="answer" name="answer" required>
+        <br><br>
+        <button type="button" id="submit">Submit</button>
+ 
+
+    <div id="response"></div>
+
+    <script>
+        let Type = true;
+        var Question = '';
+        const button = document.getElementById('submit');
+        const responseDiv = document.getElementById('response');
+        getQuestion = () => {
+            fetch("http://localhost:3000", {
+                method: "GET",
+                
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    Type = data.type;
+                    if(Type){
+
+                        Question = data.question;
+                        document.getElementById("question-label").innerHTML = Question;
+                        console.log(Question);
+                        document.getElementById("answer").value = "";
+                    }
+                    else{
+                        document.getElementById("question-label").innerHTML = "Survey Completed";
+                        document.getElementById("answer").style.display = "none";
+                        document.getElementById("submit").style.display = "none";
+                        
+                        text = "<br>Name: " + data.message[1];
+                        text = text + " <br> Age: " + data.message[2];
+                        text = text + " <br> Color:  " + data.message[3];
+                        responseDiv.innerHTML = text;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("output").innerHTML = "Error occurred.";
+                });
+        }
+       
+        getQuestion();
+       
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const formData = document.getElementById('answer').value;
+
+                fetch('http://localhost:3000/user', {
+                    method: 'POST',
+                    body: JSON.stringify({answer:formData}),
+                    
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    responseDiv.textContent = data.message;
+                    console.log('Success:', data);
+                    getQuestion();
+                })
+                .catch(error => {
+                    responseDiv.textContent = 'Error: ' + error.message;
+                });
+
+                // get new question
+                
+
+            });
+        
+    </script>
+</body>
+</html>
